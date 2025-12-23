@@ -1,97 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Your Business AI Assistant</title>
-
-  <link rel="stylesheet" href="style.CSS">
-
-</head>
+  <meta charset="UTF-8" />
+  <title>SmartBiz Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>🤖
 <body>
 
-  <h2>
-<h1>AI Sales Assistant</h1>
-<p>We help you grow your business 🚀</p>
+<div class="body">
+  <img src="Screenshot_20251218_081232_Chrome.png" class="background" alt="">
+</div>
 
-</h2>
-  <div id="chat"></div>
+<div class="chat-header">
+  <img src="Screenshot_20251218_081232_Chrome.png" class="logo" alt="Company Logo" />
+  <h2>AI-_-GROW</h2>
+  <p>Your digital sales assistant</p>
+</div>
 
-  <div id="inputBox">
-    <textarea id="message" placeholder="Ask about services, pricing, or support..."></textarea>
-    <button id="send">Send</button>
+
+    <div class="chat-box" id="chatBox"></div>
+
+    <div class="chat-input">
+      <input type="text" id="userInput" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+
+    </div>
+     <button id="changeBusinessBtn">Change Business</button>
   </div>
 
-  <div id="typing" class="typing" style="display:none;">
-    🤖 Bot is typing<span>.</span><span>.</span><span>.</span>
-  </div>
+<script>
 
-  <div class="header">
-   <img src="Screenshot_20251218_081232_Chrome.jpg" alt="Company Logo" class="logo">
-  <h1>AI-_-GROW</h1>
-  </div>
-   
-
+window.onload = () => {
+  addMessage(
+    "👋 Welcome to AI-_-GROW!\n\Let's Grow your Business Together.\n\What can we Build / Fix for you today? Pick a number\n1️: Website/HTML/CSS/JS/\n2️: Land Page\n3️: Chatbot/ AI Customer Support Automation\n4️: other",
+    "bot"
+  );
+};
 
 
-  <script>
-    const chatBox = document.getElementById("chat");
-    const input = document.getElementById("message");
-    const sendBtn = document.getElementById("send");
-    const typing = document.getElementById("typing");
+const chatBox = document.getElementById("chatBox");
 
-    function showTyping() {
-      typing.style.display = "block";
+let businessType = null;
+function addMessage(text, sender) {
+  const msg = document.createElement("div");
+  msg.className = `message ${sender}`;
+  msg.textContent = text;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function addOptions(options) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "options";
+
+  options.forEach(text => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn";
+    btn.textContent = text;
+    btn.onclick = () => handleOptionClick(text);
+    wrapper.appendChild(btn);
+  });
+
+  chatBox.appendChild(wrapper);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function handleOptionClick(text) {
+  console.log("Button clicked:", text);
+  sendMessage(text);
+}
+
+
+
+async function sendMessage(forcedMessage = null) {
+  const input = document.getElementById("userInput");
+  const message = forcedMessage || input.value.trim();
+
+  if (!message) return;
+
+  console.log("Sending message:", message);
+
+  addMessage(message, "user");
+  input.value = "";
+
+
+
+  // STEP 1: Capture business type
+  if (!businessType) {
+    if (message === "1") businessType = "Website/HTML/CSS/JS";
+    else if (message === "2") businessType = "Landing Page";
+    else if (message === "3") businessType = "Chatbot";
+    else if (message === "4") businessType = "other";
+    else {
+      addMessage("Please choose 1, 2, 3, or 4.", "bot");
+      return;
     }
 
-    function hideTyping() {
-      typing.style.display = "none";
+    addMessage(`✅ Setup complete.`, "bot");
+    showBusinessOptions(businessType);
+
+
+   function showBusinessOptions(type) {
+   if (type === "Landing Page") {
+     addMessage("Welcome to Animations Landing Page! How can I help?", "bot");
+     addOptions([
+       "Do you want a Landing Page?",
+       "Landing Page Speed Booster/Mobile UX?",
+        "Responsive Landing Page Tester?",
+        "Landing Page Audit?",
+        "other?"
+      ]);
     }
 
-
-    function addMessage(text, role) {
-      const div = document.createElement("div");
-      div.className = "msg " + role;
-      div.textContent = text;
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
+    if (type === "Website/HTML/CSS/JS") {
+     addMessage("Welcome to Website/HTML//CSS/JS Issues! How can I help?", "bot");
+      addOptions([
+       "Websites?",
+       "HTML/CSS/JS",
+       "other?"
+      ]);
     }
 
-    sendBtn.addEventListener("click", sendMessage);
-    input.addEventListener("keypress", function(e){
-      if(e.key === "Enter" && !e.shiftKey){
-        e.preventDefault();
-        sendMessage();
-      }
-    });
+    if (type === "Chatbot") {
+     addMessage( "Welcome to Chatbot/ AI Customer Support Automation! What can we build for you?", "bot");
+      addOptions([
+       "OpenAI ChatGPT Integration?",
+       "Tidio Chatbot?",
+       "Custom JS Bot?",
+       "DialogFlow(Google)?",
+       "other?"
+      ]);
+    }
 
-    async function sendMessage() {
-      const text = input.value.trim();
-      if (!text) return;
+    if (type === "other") {
+     addMessage("⚖️ Welcome! Click contact to find our contact? Email or Call !", "bot");
+      addOptions([
+       "Contact?"
+      ]);
+    }
+  }
+ }
 
-      addMessage(text, "user");
-      showTyping();
-
-      setTimeout(async () => {
-    try {
-     const response = await fetch("/chat", {
+  // Send to server
+  try {
+    const res = await fetch("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text })
-      });
+      body: JSON.stringify({ message, businessType })
+    });
 
-    const data = await response.json();
+    if (!res.ok) throw new Error("Server error");
 
-    hideTyping();
+    const data = await res.json();
     addMessage(data.reply, "bot");
 
-      } catch (err) {
-       hideTyping();
-       addMessage("⚠️ Connection error.", "bot");
-      }
-     }, 800); // typing delay
-    }
-
-  </script>
-
+  } catch (err) {
+    console.error(err);
+    addMessage("⚠️ Connection error.", "bot");
+  }
+}
+</script>
 </body>
 </html>
