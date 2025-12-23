@@ -18,6 +18,14 @@ const email_pass = process.env.EMAIL_PASS
 
 const client = twilio(accountSid, authToken);
 
+const input = document.getElementById("userInput");
+
+input.addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    e.preventDefault();     // stop form reload
+    sendMessage();
+  }
+});
 
 
 console.log("✅ SERVER FILE LOADED");
@@ -33,11 +41,14 @@ app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
 
+
+
+
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 let step = 0;
 let lead = {};
-
 
 app.post("/chat", (req, res) => {
   const { message = "", businessType = "" } = req.body;

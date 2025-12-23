@@ -10,7 +10,7 @@
 
 
 <div class="chat-header">
-  <img src="Screenshot_20251218_081232_Chrome.png" class="logo" alt="Company Logo" />
+  <img src="xxxxx" class="logo" alt="Company Logo" />
   <h2>AI-_-GROW</h2>
   <p>Your digital sales assistant</p>
 </div>
@@ -19,11 +19,11 @@
     <div class="chat-box" id="chatBox"></div>
 
     <div class="chat-input">
-      <input type="text" id="userInput" placeholder="Type your message..." />
-      <button onclick="sendMessage()">Send</button>
-
+      <input id="userInput" type="text" placeholder="Type a message..." autocomplete="on"/>
+      <button onclick="sendMessage()">Send</button> 
+      <button id="changeBusinessBtn" style="color: rgb(240, 245, 250);background:rgb(7, 17, 112) ;">Change Business</button>
     </div>
-     <button id="changeBusinessBtn">Change Business</button>
+    
   </div>
 
 <script>
@@ -69,6 +69,14 @@ function handleOptionClick(text) {
 }
 
 
+const input = document.getElementById("userInput");
+
+input.addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    e.preventDefault();     // stop form reload
+    sendMessage();
+  }
+});
 
 async function sendMessage(forcedMessage = null) {
   const input = document.getElementById("userInput");
@@ -96,6 +104,8 @@ async function sendMessage(forcedMessage = null) {
 
     addMessage(`✅ Setup complete.`, "bot");
     showBusinessOptions(businessType);
+
+
 
 
    function showBusinessOptions(type) {
@@ -136,8 +146,64 @@ async function sendMessage(forcedMessage = null) {
        "Contact?"
       ]);
     }
+   } 
+let selectedBusiness = "";
+
+document.getElementById("changeBusinessBtn").onclick = () => {
+  selectedBusiness = "";
+  showBusinessOptions(businessType);
+};
+
+function sendMessage(message) {
+  fetch("/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message,
+      businessType: selectedBusiness
+    })
+  })
+    .then(res => res.json())
+    .then(data => {
+      addMessage("bot", data.reply);
+
+      // 🔁 Backend requested category reset
+      if (data.resetCategory) {
+        selectedBusiness = "";
+        showBusinessOptions(businessType);
+      }
+      
+    });
+
+  function showBusinessOptions(changeBusinessBtn) {
+  const options = [
+    "Website/HTML/CSS/JS",
+    "Landing Page",
+    "Chatbot",
+    "other"
+  ];
+
+  const container = document.getElementById("businessOptions");
+  container.innerHTML = "";
+
+  options.forEach(option => {
+    const btn = document.createElement("button");
+    btn.textContent = option;
+    btn.onclick = () => {
+      selectedBusiness = option;
+      addMessage("user", option);
+      addMessage("bot", `Great 👍 You selected **${option}**. How can I help?`);
+      container.innerHTML = "";
+    };
+    container.appendChild(btn);
+  });
+}
+
+}
+
+
   }
- }
+
 
   // Send to server
   try {
